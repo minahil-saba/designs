@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCODE</title>
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Open Sans', 'Helvetica Neue', 'sans-serif';
+            background-color: black;
+            color: white;
+            min-height: 100vh;
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        /* Spline background */
+        spline-viewer.robotic-3d {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+
+        .image-gradient {
+            position: absolute;
+            top: 0;
+            right: 0;
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        .layer-blur {
+            position: absolute;
+            top: 20%;
+            right: 0;
+            width: 30rem;
+            height: 0;
+            backdrop-filter: blur(10px);
+            z-index: -1;
+            box-shadow: 0 0 700px 15px white;
+            rotate: -30deg;
+        }
+
+        .container {
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5rem;
+            z-index: 999;
+            position: relative;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 3rem;
+            font-weight: 300;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        header h1:hover {
+            color: #bb86fc;
+            transform: scale(1.05);
+        }
+
+        nav {
+            display: flex;
+            gap: 3rem;
+            align-items: center;
+            margin-left: -5%;
+        }
+
+        nav a {
+            font-size: 1rem;
+            letter-spacing: 0.1rem;
+            transition: color 0.3s ease, transform 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            z-index: 999;
+        }
+
+        nav a:hover {
+            color: #bb86fc;
+            transform: translateY(-2px);
+        }
+
+        .signin {
+            background-color: white;
+            color: black;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+            cursor: pointer;
+            z-index: 999;
+        }
+
+        .signin:hover {
+            background-color: #bb86fc;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        /* Centered hero content */
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 6rem);
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .content {
+            max-width: 40rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tag-box {
+            position: relative;
+            width: 18rem;
+            height: 2.5rem;
+            border-radius: 50px;
+            background: linear-gradient(to right, #656565, #7f42a7, #6600c5, #5300a0, #757575, #656565);
+            background-size: 200%;
+            animation: animationGradient 5s linear infinite;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .tag-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: inherit;
+            border-radius: 50px;
+            z-index: -1;
+        }
+
+        .tag-box .tag {
+            position: relative;
+            padding: 0.5rem 1rem;
+            width: calc(100% - 6px);
+            height: calc(100% - 6px);
+            margin: 3px;
+            background-color: black;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 1;
+        }
+
+        .tag-box:hover .tag {
+            background-color: transparent;
+            color: white;
+        }
+
+        @keyframes animationGradient {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        .content h1 {
+            font-size: 4rem;
+            font-weight: 600;
+        }
+
+        .description {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 1rem 0;
+            color: gray;
+            max-width: 32rem;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-get-started,
+        .btn-signing-main {
+            padding: 0.8rem 1.8rem;
+            border-radius: 50px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-get-started {
+            background-color: transparent;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-get-started:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: white;
+        }
+
+        .btn-signing-main {
+            background-color: white;
+            color: black;
+        }
+
+        .btn-signing-main:hover {
+            background-color: rgba(255, 255, 255, 0.8);
+            color: black;
+        }
+        /* Responsive Breakpoints */
+@media (max-width: 1200px) {
+    header {
+        padding: 1rem 2rem;
+    }
+    
+    .content {
+        margin-left: 5%;
+    }
+    
+}
+
+@media (max-width: 992px) {
+    .content h1 {
+        font-size: 3.5rem;
+    }
+    
+   
+   
+
+}
+
+@media (max-width: 768px) {
+    header {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    nav {
+        margin-left: 0;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .content {
+        margin: 5% auto;
+        padding: 0 1.5rem;
+        text-align: center;
+        align-items: center;
+    }
+    
+    .tag-box {
+        width: 16rem;
+        margin: 0 auto;
+    }
+    
+    .content h1 {
+        font-size: 2.8rem;
+    }
+    
+    .description {
+        font-size: 1rem;
+    }
+    
+    .buttons {
+        justify-content: center;
+    }
+   
+}
+
+@media (max-width: 576px) {
+    header h1 {
+        font-size: 2rem;
+    }
+    
+    nav a {
+        font-size: 0.9rem;
+    }
+    
+    .signin {
+        padding: 0.6rem 1.5rem;
+    }
+    
+    .content h1 {
+        font-size: 2.2rem;
+    }
+    
+    .tag-box {
+        width: 14rem;
+        height: 2.2rem;
+    }
+    
+    .buttons {
+        gap: 1rem;
+    }
+    
+    .btn-get-started, .btn-signing-main {
+        padding: 0.7rem 1.5rem;
+        font-size: 0.9rem;
+    }
+    
+   
+}
+    </style>
+</head>
+<body>
+    <img class="image-gradient" src="gradient.png" alt="gradient">
+    <div class="layer-blur"></div>
+
+    <div class="container">
+        <header>
+            <h1 data-aos="fade-down" data-aos-duration="1500" class="logo">MCODE</h1>
+            <nav>
+                <a data-aos="fade-down" data-aos-duration="500" href="#">COMPANY</a>
+                <a data-aos="fade-down" data-aos-duration="500" href="#">FEATURES</a>
+                <a data-aos="fade-down" data-aos-duration="500" href="#">RESOURCES</a>
+                <a data-aos="fade-down" data-aos-duration="500" href="#">DOCS</a>
+            </nav>
+            <button data-aos="fade-down" data-aos-duration="500" class="signin">SIGNIN</button>
+        </header>
+
+        <main>
+            <div data-aos="fade-zoom-in"
+                data-aos-easing="ease-in-back"
+                data-aos-delay="300"
+                data-aos-offset="0" data-aos-duration="1500"
+                class="content">
+
+                <div class="tag-box">
+                    <div class="tag">INTRODUCING &wedbar;</div>
+                </div>
+
+                <h1 data-aos="fade-zoom-in"
+                    data-aos-easing="ease-in-back"
+                    data-aos-delay="300"
+                    data-aos-offset="0" data-aos-duration="2000">
+                    EMAIL FOR<br>DEVELOPERS
+                </h1>
+
+                <p data-aos="fade-zoom-in"
+                    data-aos-easing="ease-in-back"
+                    data-aos-delay="300"
+                    data-aos-offset="0" data-aos-duration="2500"
+                    class="description">
+                    The best way to reach humans instead of spam folder.<br>
+                    Deliver transactional and marketing emails at scale.
+                </p>
+
+                <div data-aos="fade-zoom-in"
+                    data-aos-easing="ease-in-back"
+                    data-aos-delay="300"
+                    data-aos-offset="0" data-aos-duration="8000"
+                    class="buttons">
+                    <a href="#" class="btn-get-started">Documentation &gt;</a>
+                    <a href="#" class="btn-signing-main">Get Started &gt;</a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Spline Background -->
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.10.44/build/spline-viewer.js"></script>
+    <spline-viewer class="robotic-3d" url="https://prod.spline.design/NY1CNHrOOyLbopVt/scene.splinecode"></spline-viewer>
+
+    <!-- AOS Animations -->
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script>
+        AOS.init();
+    </script>
+</body>
+</html>
